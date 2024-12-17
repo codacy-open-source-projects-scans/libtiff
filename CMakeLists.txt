@@ -29,6 +29,11 @@ cmake_minimum_required(VERSION 3.9.0)
 # Default policy is from 3.9.0
 cmake_policy(VERSION 3.9.0)
 
+if(POLICY CMP0074)
+  # Allow find_package() to use the ZLIB_ROOT variable, if available.
+  cmake_policy(SET CMP0074 NEW)
+endif()
+
 # Find CMake modules in cmake/
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
 
@@ -225,7 +230,7 @@ message(STATUS "  LZMA2 support:                      Requested:${lzma} Availabi
 message(STATUS "  ZSTD support:                       Requested:${zstd} Availability:${ZSTD_USABLE} Support:${ZSTD_SUPPORT}")
 message(STATUS "  WEBP support:                       Requested:${webp} Availability:${WebP_FOUND} Support:${WEBP_SUPPORT}")
 message(STATUS "")
-message(STATUS "  C++ support:                        ${cxx} (requested) ${CXX_SUPPORT} (availability)")
+message(STATUS "  C++ support:                        ${tiff-cxx} (requested) ${CXX_SUPPORT} (availability)")
 message(STATUS "")
 # message(STATUS "  X Athena Widgets support:           ${HAVE_XAW}")
 message(STATUS "  OpenGL support:                     Requested:${tiff-opengl} Availability:${HAVE_OPENGL} Support:${OPENGL_SUPPORT}")
