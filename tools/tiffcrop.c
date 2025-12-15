@@ -997,7 +997,7 @@ static int readContigTilesIntoBuffer(TIFF *in, uint8_t *buf,
                   "Integer overflow when calculating buffer size.");
         exit(EXIT_FAILURE);
     }
-    tilebuf = limitMalloc(tile_buffsize + NUM_BUFF_OVERSIZE_BYTES);
+    tilebuf = (unsigned char *)limitMalloc(tile_buffsize + NUM_BUFF_OVERSIZE_BYTES);
     if (tilebuf == 0)
         return 0;
     tilebuf[tile_buffsize] = 0;
@@ -1489,7 +1489,7 @@ static int writeBufferToContigTiles(TIFF *out, uint8_t *buf,
     src_rowsize = ((imagewidth * spp * bps) + 7U) / 8;
 
     /* Add 3 padding bytes for extractContigSamples32bits */
-    tilebuf = limitMalloc(tile_buffsize + NUM_BUFF_OVERSIZE_BYTES);
+    tilebuf = (unsigned char *)limitMalloc(tile_buffsize + NUM_BUFF_OVERSIZE_BYTES);
     if (tilebuf == 0)
         return 1;
     memset(tilebuf, 0, tile_buffsize + NUM_BUFF_OVERSIZE_BYTES);
@@ -1843,7 +1843,7 @@ void process_command_opts(int argc, char *argv[], char *mp, char *mode,
                           struct dump_opts *dump, unsigned int *imagelist,
                           unsigned int *image_count)
 {
-    int c, good_args = 0;
+    int c;
     char *opt_offset = NULL; /* Position in string of value sought */
     char *opt_ptr = NULL;    /* Pointer to next token in option set */
     char *sep = NULL;        /* Pointer to a token separator */
@@ -1859,7 +1859,6 @@ void process_command_opts(int argc, char *argv[], char *mp, char *mode,
                        "ac:d:e:f:hik:l:m:p:r:stvw:z:BCD:E:F:H:I:J:K:LMN:O:P:R:"
                        "S:U:V:X:Y:Z:")) != -1)
     {
-        good_args++;
         switch (c)
         {
             case 'a':
@@ -5581,7 +5580,7 @@ static int readSeparateStripsIntoBuffer(TIFF *in, uint8_t *obuf,
     for (s = 0; (s < spp) && (s < MAX_SAMPLES); s++)
     {
         srcbuffs[s] = NULL;
-        buff = limitMalloc(stripsize + NUM_BUFF_OVERSIZE_BYTES);
+        buff = (unsigned char *)limitMalloc(stripsize + NUM_BUFF_OVERSIZE_BYTES);
         if (!buff)
         {
             TIFFError(
@@ -8600,8 +8599,8 @@ static int createImageSection(uint32_t sectsize, unsigned char **sect_buff_ptr)
     {
         if (prev_sectsize < sectsize)
         {
-            new_buff =
-                _TIFFrealloc(sect_buff, sectsize + NUM_BUFF_OVERSIZE_BYTES);
+            new_buff = (unsigned char *)_TIFFrealloc(
+                sect_buff, sectsize + NUM_BUFF_OVERSIZE_BYTES);
             if (!new_buff)
             {
                 _TIFFfree(sect_buff);
@@ -8656,8 +8655,8 @@ static int processCropSelections(struct image_data *image,
             prev_cropsize = seg_buffs[0].size;
             if (prev_cropsize < cropsize)
             {
-                next_buff =
-                    _TIFFrealloc(crop_buff, cropsize + NUM_BUFF_OVERSIZE_BYTES);
+                next_buff = (unsigned char *)_TIFFrealloc(
+                    crop_buff, cropsize + NUM_BUFF_OVERSIZE_BYTES);
                 if (!next_buff)
                 {
                     _TIFFfree(crop_buff);
@@ -8777,7 +8776,7 @@ static int processCropSelections(struct image_data *image,
                 prev_cropsize = seg_buffs[i].size;
                 if (prev_cropsize < cropsize)
                 {
-                    next_buff = _TIFFrealloc(
+                    next_buff = (unsigned char *)_TIFFrealloc(
                         crop_buff, cropsize + NUM_BUFF_OVERSIZE_BYTES);
                     if (!next_buff)
                     {
@@ -8946,8 +8945,8 @@ static int createCroppedImage(struct image_data *image, struct crop_mask *crop,
     {
         if (prev_cropsize < cropsize)
         {
-            new_buff =
-                _TIFFrealloc(crop_buff, cropsize + NUM_BUFF_OVERSIZE_BYTES);
+            new_buff = (unsigned char *)_TIFFrealloc(
+                crop_buff, cropsize + NUM_BUFF_OVERSIZE_BYTES);
             if (!new_buff)
             {
                 free(crop_buff);
@@ -10376,14 +10375,16 @@ static int reverseSamples32bits(uint16_t spp, uint16_t bps, uint32_t width,
             match_bits = mask_bits << (64 - high_bit - bps);
             if (little_endian)
             {
-                longbuff1 =
-                    ((uint32_t)src[0] << 24) | ((uint32_t)src[1] << 16) | ((uint32_t)src[2] << 8) | (uint32_t)src[3];
+                longbuff1 = ((uint32_t)src[0] << 24) |
+                            ((uint32_t)src[1] << 16) | ((uint32_t)src[2] << 8) |
+                            (uint32_t)src[3];
                 longbuff2 = longbuff1;
             }
             else
             {
-                longbuff1 =
-                    ((uint32_t)src[3] << 24) | ((uint32_t)src[2] << 16) | ((uint32_t)src[1] << 8) | (uint32_t)src[0];
+                longbuff1 = ((uint32_t)src[3] << 24) |
+                            ((uint32_t)src[2] << 16) | ((uint32_t)src[1] << 8) |
+                            (uint32_t)src[0];
                 longbuff2 = longbuff1;
             }
             buff3 = ((uint64_t)longbuff1 << 32) | longbuff2;

@@ -243,6 +243,15 @@ tsize_t Ascii85EncodeBlock(uint8_t *ascii85_p, unsigned f_eod,
                            const uint8_t *raw_p, tsize_t raw_l);
 #endif
 
+#define CHECK_DOUBLE_TO_INT32(functionName, paraString, val)                   \
+    if (val < INT32_MIN || val > INT32_MAX)                                    \
+    {                                                                          \
+        TIFFError("Error in " functionName,                                    \
+                  " %s = %f, which is out of int32_t range. Aborting",         \
+                  paraString, val);                                            \
+        return (-1);                                                           \
+    }
+
 static void usage(int);
 
 /**
@@ -1257,6 +1266,12 @@ int psPageSize(FILE *fd, int rotation, double pgwidth, double pgheight,
                 }
                 new_width = splitwidth ? splitwidth : scale * pswidth;
                 new_height = splitheight ? splitheight : scale * psheight;
+                /* Check for resonable range of double parameters representing
+                 * integer values, before casting to int32_t.
+                 * On error return(-1). */
+                CHECK_DOUBLE_TO_INT32("psPageSize", "new_width", new_width);
+                CHECK_DOUBLE_TO_INT32("psPageSize", "new_height", new_height);
+
                 if (strlen(pageOrientation))
                     fprintf(fd, "%%%%PageOrientation: %s\n", pageOrientation);
                 else
@@ -1275,6 +1290,11 @@ int psPageSize(FILE *fd, int rotation, double pgwidth, double pgheight,
             {
                 if ((pgwidth == 0) && (pgheight == 0)) /* Image not scaled */
                 {
+                    /* Check for resonable range of double parameters
+                     * representing integer values, before casting to int32_t.
+                     * On error return(-1). */
+                    CHECK_DOUBLE_TO_INT32("psPageSize", "pswidth", pswidth);
+                    CHECK_DOUBLE_TO_INT32("psPageSize", "psheight", psheight);
                     if (strlen(pageOrientation))
                         fprintf(fd, "%%%%PageOrientation: %s\n",
                                 pageOrientation);
@@ -1293,6 +1313,11 @@ int psPageSize(FILE *fd, int rotation, double pgwidth, double pgheight,
                 }
                 else /* Image scaled */
                 {
+                    /* Check for resonable range of double parameters
+                     * representing integer values, before casting to int32_t.
+                     * On error return(-1). */
+                    CHECK_DOUBLE_TO_INT32("psPageSize", "reqwidth", reqwidth);
+                    CHECK_DOUBLE_TO_INT32("psPageSize", "reqheight", reqheight);
                     if (strlen(pageOrientation))
                         fprintf(fd, "%%%%PageOrientation: %s\n",
                                 pageOrientation);
@@ -1323,6 +1348,11 @@ int psPageSize(FILE *fd, int rotation, double pgwidth, double pgheight,
                 }
                 new_width = splitwidth ? splitwidth : scale * psheight;
                 new_height = splitheight ? splitheight : scale * pswidth;
+                /* Check for resonable range of double parameters representing
+                 * integer values, before casting to int32_t.
+                 * On error return(-1). */
+                CHECK_DOUBLE_TO_INT32("psPageSize", "new_width", new_width);
+                CHECK_DOUBLE_TO_INT32("psPageSize", "new_height", new_height);
 
                 if (strlen(pageOrientation))
                     fprintf(fd, "%%%%PageOrientation: %s\n", pageOrientation);
@@ -1342,6 +1372,11 @@ int psPageSize(FILE *fd, int rotation, double pgwidth, double pgheight,
             {
                 if ((pgwidth == 0) && (pgheight == 0)) /* Image not scaled */
                 {
+                    /* Check for resonable range of double parameters
+                     * representing integer values, before casting to int32_t.
+                     * On error return(-1). */
+                    CHECK_DOUBLE_TO_INT32("psPageSize", "pswidth", pswidth);
+                    CHECK_DOUBLE_TO_INT32("psPageSize", "psheight", psheight);
                     if (strlen(pageOrientation))
                         fprintf(fd, "%%%%PageOrientation: %s\n",
                                 pageOrientation);
@@ -1360,6 +1395,11 @@ int psPageSize(FILE *fd, int rotation, double pgwidth, double pgheight,
                 }
                 else /* Image scaled */
                 {
+                    /* Check for resonable range of double parameters
+                     * representing integer values, before casting to int32_t.
+                     * On error return(-1). */
+                    CHECK_DOUBLE_TO_INT32("psPageSize", "reqwidth", reqwidth);
+                    CHECK_DOUBLE_TO_INT32("psPageSize", "reqheight", reqheight);
                     if (strlen(pageOrientation))
                         fprintf(fd, "%%%%PageOrientation: %s\n",
                                 pageOrientation);
@@ -1511,7 +1551,16 @@ int psStart(FILE *fd, int npages, int auto_rotate, int *rotation, double *scale,
          * and optimal orientation.
          */
         if (!npages)
+        {
+            /* Check for resonable range of double parameters representing
+             * integer values, before casting to int32_t within PSHead().
+             * On error return(-1). */
+            CHECK_DOUBLE_TO_INT32("psStart", "reqwidth", reqwidth);
+            CHECK_DOUBLE_TO_INT32("psStart", "reqheight", reqheight);
+            CHECK_DOUBLE_TO_INT32("psStart", "ox", ox);
+            CHECK_DOUBLE_TO_INT32("psStart", "oy", oy);
             PSHead(fd, reqwidth, reqheight, ox, oy);
+        }
 
         return (0);
     }
@@ -1609,8 +1658,20 @@ int psStart(FILE *fd, int npages, int auto_rotate, int *rotation, double *scale,
     }
 
     if (!npages)
-        PSHead(fd, (page_width ? page_width : view_width),
-               (page_height ? page_height : view_height), ox, oy);
+    {
+        double pw = (page_width ? page_width : view_width);
+        const char *pwStr = (page_width ? "page_width" : "view_width");
+        double ph = (page_height ? page_height : view_height);
+        const char *phStr = (page_height ? "page_height" : "view_height");
+        /* Check for resonable range of double parameters representing
+         * integer values, before casting to int32_t within PSHead().
+         * On error return(-1). */
+        CHECK_DOUBLE_TO_INT32("psStart", pwStr, pw);
+        CHECK_DOUBLE_TO_INT32("psStart", phStr, ph);
+        CHECK_DOUBLE_TO_INT32("psStart", "ox", ox);
+        CHECK_DOUBLE_TO_INT32("psStart", "oy", oy);
+        PSHead(fd, pw, ph, ox, oy);
+    }
 
     *scale = (xscale < yscale) ? xscale : yscale;
     if (*scale > 1.0)
@@ -2486,7 +2547,7 @@ int PS_Lvl2page(FILE *fd, TIFF *tif, uint32_t w, uint32_t h)
          * 5*chunk_size/4.
          */
 
-        ascii85_p = limitMalloc((chunk_size + (chunk_size / 2)) + 8);
+        ascii85_p = (uint8_t *)limitMalloc((chunk_size + (chunk_size / 2)) + 8);
 
         if (!ascii85_p)
         {
@@ -2988,7 +3049,7 @@ void PSDataBW(FILE *fd, TIFF *tif, uint32_t w, uint32_t h)
          * 5*stripsize/4.
          */
 
-        ascii85_p = limitMalloc((stripsize + (stripsize / 2)) + 8);
+        ascii85_p = (uint8_t *)limitMalloc((stripsize + (stripsize / 2)) + 8);
 
         if (!ascii85_p)
         {
@@ -3155,7 +3216,7 @@ void PSRawDataBW(FILE *fd, TIFF *tif, uint32_t w, uint32_t h)
          * 5*bufsize/4.
          */
 
-        ascii85_p = limitMalloc((bufsize + (bufsize / 2)) + 8);
+        ascii85_p = (uint8_t *)limitMalloc((bufsize + (bufsize / 2)) + 8);
 
         if (!ascii85_p)
         {
