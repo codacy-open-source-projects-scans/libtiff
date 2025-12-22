@@ -21,10 +21,3 @@
 # WHETHER OR NOT ADVISED OF THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF
 # LIABILITY, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE
 # OF THIS SOFTWARE.
-
-add_executable(iptcutil iptcutil.c)
-set_target_properties(iptcutil PROPERTIES LINKER_LANGUAGE CXX)
-target_link_libraries(iptcutil tiff tiff_port)
-
-# Apply C++ compatibility mode if enabled
-tiff_target_compile_as_cxx(iptcutil)
