@@ -110,13 +110,17 @@ int main(int argc, char *argv[])
     extern int optind;
 #endif
     int c;
+    long v;
 
     while ((c = getopt(argc, argv, "M:")) != -1)
     {
         switch (c)
         {
             case 'M':
-                maxMalloc = (tmsize_t)strtoul(optarg, NULL, 0) << 20;
+                v = strtol(optarg, NULL, 0);
+                if (v < 0)
+                    usage(EXIT_FAILURE);
+                maxMalloc = (tmsize_t)v << 20;
                 if ((maxMalloc == 0) && (optarg[0] != '0'))
                 {
                     fprintf(stderr,
@@ -138,7 +142,7 @@ int main(int argc, char *argv[])
     if (c < 1 || c > 2)
         usage(EXIT_FAILURE);
 
-    if (strlen(argv[optind + 1]) > PATH_LENGTH - 2)
+    if (strlen(argv[optind + 1]) > sizeof(fname) - 4)
     {
         fprintf(stderr, "tiffsplit: filename too long\n");
         return EXIT_FAILURE;
@@ -281,6 +285,7 @@ static void newfilename(void)
      * cycle last letter every file, from a-z, then repeat
      */
     fpnt[2] = (char)(fnum % 26) + 'a';
+    fpnt[3] = '\0'; /* ensure proper termination */
     fnum++;
 }
 
