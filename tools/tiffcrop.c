@@ -166,7 +166,7 @@
 #define TIFFhowmany(x, y)                                                      \
     ((((uint32_t)(x)) + (((uint32_t)(y)) - 1)) / ((uint32_t)(y)))
 #define TIFFhowmany8(x)                                                        \
-    (((x)&0x07) ? ((uint32_t)(x) >> 3) + 1 : (uint32_t)(x) >> 3)
+    (((x) & 0x07) ? ((uint32_t)(x) >> 3) + 1 : (uint32_t)(x) >> 3)
 #endif
 
 /*
@@ -1365,8 +1365,8 @@ static int writeBufferToSeparateStrips(TIFF *out, uint8_t *buf, uint32_t length,
             "Error, uint32_t overflow when computing (bps * spp * width) + 7");
         return 1;
     }
-    rowsize =
-        ((uint32_t)bps * (uint32_t)spp * width + 7U) / 8; /* source has interleaved samples */
+    rowsize = ((uint32_t)bps * (uint32_t)spp * width + 7U) /
+              8; /* source has interleaved samples */
     if (bytes_per_sample == 0 ||
         local_rowsperstrip > UINT32_MAX / bytes_per_sample ||
         local_rowsperstrip * bytes_per_sample > UINT32_MAX / (width + 1))
@@ -5943,7 +5943,8 @@ static int computeInputPixelOffsets(struct crop_mask *crop,
     }
     else
     {
-        if ((TIFF_FLOAT_EQ(image->xres, 0.0f) || TIFF_FLOAT_EQ(image->yres, 0.0f)) &&
+        if ((TIFF_FLOAT_EQ(image->xres, 0.0f) ||
+             TIFF_FLOAT_EQ(image->yres, 0.0f)) &&
             (crop->res_unit != RESUNIT_NONE) &&
             ((crop->crop_mode & CROP_REGIONS) ||
              (crop->crop_mode & CROP_MARGINS) ||
@@ -6047,8 +6048,9 @@ static int computeInputPixelOffsets(struct crop_mask *crop,
             if (zlength > max_length)
                 max_length = zlength;
 
-            buffsize = (uint32_t)(((uint64_t)zwidth * image->bps * image->spp + 7) / 8 *
-                                  (zlength + 1));
+            buffsize =
+                (uint32_t)(((uint64_t)zwidth * image->bps * image->spp + 7) /
+                           8 * (zlength + 1));
 
             crop->regionlist[i].buffsize = buffsize;
             crop->bufftotal += buffsize;
@@ -6110,10 +6112,14 @@ static int computeInputPixelOffsets(struct crop_mask *crop,
         }
         else
         { /* inches or centimeters specified */
-            tmargin = _TIFFClampDoubleToUInt32(crop->margins[0] * scale * (double)yres);
-            lmargin = _TIFFClampDoubleToUInt32(crop->margins[1] * scale * (double)xres);
-            bmargin = _TIFFClampDoubleToUInt32(crop->margins[2] * scale * (double)yres);
-            rmargin = _TIFFClampDoubleToUInt32(crop->margins[3] * scale * (double)xres);
+            tmargin = _TIFFClampDoubleToUInt32(crop->margins[0] * scale *
+                                               (double)yres);
+            lmargin = _TIFFClampDoubleToUInt32(crop->margins[1] * scale *
+                                               (double)xres);
+            bmargin = _TIFFClampDoubleToUInt32(crop->margins[2] * scale *
+                                               (double)yres);
+            rmargin = _TIFFClampDoubleToUInt32(crop->margins[3] * scale *
+                                               (double)xres);
         }
 
         if (lmargin == 0xFFFFFFFFU || rmargin == 0xFFFFFFFFU ||
@@ -6159,13 +6165,14 @@ static int computeInputPixelOffsets(struct crop_mask *crop,
     else
     {
         if (crop->crop_mode & CROP_WIDTH)
-            width = _TIFFClampDoubleToUInt32(crop->width * scale * (double)image->xres);
+            width = _TIFFClampDoubleToUInt32(crop->width * scale *
+                                             (double)image->xres);
         else
             width = image->width - lmargin - rmargin;
 
         if (crop->crop_mode & CROP_LENGTH)
-            length =
-                _TIFFClampDoubleToUInt32(crop->length * scale * (double)image->yres);
+            length = _TIFFClampDoubleToUInt32(crop->length * scale *
+                                              (double)image->yres);
         else
             length = image->length - tmargin - bmargin;
     }
@@ -6633,8 +6640,8 @@ static int getCropOffsets(struct image_data *image, struct crop_mask *crop,
                 break;
         } /* end switch statement */
 
-        buffsize = (uint32_t)(((uint64_t)zwidth * image->bps * image->spp + 7) / 8 *
-                              (zlength + 1));
+        buffsize = (uint32_t)(((uint64_t)zwidth * image->bps * image->spp + 7) /
+                              8 * (zlength + 1));
         crop->regionlist[i].width = (uint32_t)zwidth;
         crop->regionlist[i].length = (uint32_t)zlength;
         crop->regionlist[i].buffsize = buffsize;
@@ -8066,7 +8073,8 @@ static int extractImageSection(struct image_data *image,
                         return (-1);
                     }
                     bytebuff2 = (unsigned char)(src_buff[offset1 + full_bytes] &
-                                ((unsigned char)255 << (8 - trailing_bits)));
+                                                ((unsigned char)255
+                                                 << (8 - trailing_bits)));
                     sect_buff[dst_offset] = bytebuff2;
 #ifdef DEVELMODE
                     TIFFError("",
@@ -8111,10 +8119,11 @@ static int extractImageSection(struct image_data *image,
                                "buffer.\n");
                         return (-1);
                     }
-                    bytebuff1 = (unsigned char)(
-                        src_buff[offset1 + j] & ((unsigned char)255 >> shift1));
-                    bytebuff2 = (unsigned char)(src_buff[offset1 + j + 1] &
-                                ((unsigned char)255 << (8 - shift1)));
+                    bytebuff1 = (unsigned char)(src_buff[offset1 + j] &
+                                                ((unsigned char)255 >> shift1));
+                    bytebuff2 =
+                        (unsigned char)(src_buff[offset1 + j + 1] &
+                                        ((unsigned char)255 << (8 - shift1)));
                     sect_buff[dst_offset + j] =
                         (unsigned char)((bytebuff1 << shift1) |
                                         (bytebuff2 >> (8 - shift1)));
@@ -8982,7 +8991,7 @@ static int processCropSelections(struct image_data *image,
                 seg_buffs[i].size = rot_buf_size;
             }
         } /* for crop->selections loop */
-    }     /* Separated Images (else case) */
+    } /* Separated Images (else case) */
     return (0);
 } /* end processCropSelections */
 
